@@ -126,3 +126,4 @@ PhishGuard respects your privacy:
 - User feedback is anonymized before submission
 # Phish-Guard-Pro
 # Phish-Guard-Pro
+# Phish-Guard-Pro
