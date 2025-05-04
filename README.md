@@ -124,3 +124,5 @@ PhishGuard respects your privacy:
 - All settings and lists are stored locally on your device
 - API requests only include the minimum information needed for threat detection
 - User feedback is anonymized before submission
+# Phish-Guard-Pro
+# Phish-Guard-Pro
