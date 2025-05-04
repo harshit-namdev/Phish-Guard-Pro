@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>PhishGuard</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      margin: 0;
+      padding: 0;
+      width: 320px;
+      color: #333;
+    }
+    .container {
+      padding: 16px;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #eee;
+    }
+    h1 {
+      font-size: 18px;
+      margin: 0;
+      color: #2c3e50;
+    }
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid #eee;
+      margin-bottom: 16px;
+    }
+    .tab {
+      padding: 8px 16px;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+    }
+    .tab.active {
+      border-bottom: 2px solid #3498db;
+      color: #3498db;
+      font-weight: 500;
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    .status-container {
+      margin-bottom: 16px;
+      text-align: center;
+    }
+    .status {
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-weight: 500;
+      display: inline-block;
+    }
+    .status-safe {
+      background-color: #e8f5e9;
+      color: #2e7d32;
+    }
+    .status-warning {
+      background-color: #fff8e1;
+      color: #f57f17;
+    }
+    .status-danger {
+      background-color: #ffebee;
+      color: #c62828;
+    }
+    .stats {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      background-color: #f8f9fa;
+      padding: 12px;
+      border-radius: 4px;
+    }
+    .stat-item {
+      text-align: center;
+    }
+    .stat-value {
+      font-size: 20px;
+      font-weight: 500;
+      display: block;
+    }
+    .stat-label {
+      font-size: 12px;
+      color: #6c757d;
+    }
+    .api-status {
+      display: flex;
+      align-items: center;
+      margin-bottom: 16px;
+      padding: 8px;
+      border-radius: 4px;
+      background-color: #f8f9fa;
+    }
+    .api-indicator {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+    .api-operational {
+      background-color: #4caf50;
+    }
+    .api-degraded {
+      background-color: #ff9800;
+    }
+    .api-offline {
+      background-color: #f44336;
+    }
+    .button {
+      display: block;
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 4px;
+      background-color: #3498db;
+      color: white;
+      font-weight: 500;
+      cursor: pointer;
+      margin-bottom: 8px;
+      text-align: center;
+    }
+    .button:hover {
+      background-color: #2980b9;
+    }
+    .button-secondary {
+      background-color: #f8f9fa;
+      color: #333;
+      border: 1px solid #dee2e6;
+    }
+    .button-secondary:hover {
+      background-color: #e9ecef;
+    }
+    .button-danger {
+      background-color: #e74c3c;
+    }
+    .button-danger:hover {
+      background-color: #c0392b;
+    }
+    .list {
+      max-height: 150px;
+      overflow-y: auto;
+      margin-bottom: 16px;
+    }
+    .list-item {
+      padding: 8px;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .list-item:last-child {
+      border-bottom: none;
+    }
+    .list-item-text {
+      word-break: break-all;
+      font-size: 13px;
+    }
+    .list-item-action {
+      color: #e74c3c;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .toggle-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .toggle {
+      position: relative;
+      display: inline-block;
+      width: 40px;
+      height: 20px;
+    }
+    .toggle input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 34px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 16px;
+      width: 16px;
+      left: 2px;
+      bottom: 2px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+    input:checked + .slider {
+      background-color: #3498db;
+    }
+    input:checked + .slider:before {
+      transform: translateX(20px);
+    }
+    .sensitivity {
+      margin-bottom: 16px;
+    }
+    .sensitivity-options {
+      display: flex;
+      justify-content: space-between;
+    }
+    .sensitivity-option {
+      flex: 1;
+      text-align: center;
+      padding: 6px;
+      border: 1px solid #dee2e6;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .sensitivity-option.active {
+      background-color: #3498db;
+      color: white;
+      border-color: #3498db;
+    }
+    .sensitivity-option:first-child {
+      border-radius: 4px 0 0 4px;
+    }
+    .sensitivity-option:last-child {
+      border-radius: 0 4px 4px 0;
+    }
+    .footer {
+      font-size: 12px;
+      color: #6c757d;
+      text-align: center;
+      margin-top: 16px;
+      padding-top: 8px;
+      border-top: 1px solid #eee;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>PhishGuard</h1>
+      <div id="apiStatus" class="api-status">
+        <div class="api-indicator api-operational"></div>
+        <span>API: Operational</span>
+      </div>
+    </header>
+
+    <div class="tabs">
+      <div class="tab active" data-tab="home">Home</div>
+      <div class="tab" data-tab="whitelist">Lists</div>
+      <div class="tab" data-tab="settings">Settings</div>
+    </div>
+
+    <div id="homeTab" class="tab-content active">
+      <div class="status-container">
+        <div id="status" class="status status-safe">
+          <span id="statusText">Protection Active</span>
+        </div>
+      </div>
+
+      <div class="stats">
+        <div class="stat-item">
+          <span id="scannedCount" class="stat-value">0</span>
+          <span class="stat-label">Scanned</span>
+        </div>
+        <div class="stat-item">
+          <span id="blockedCount" class="stat-value">0</span>
+          <span class="stat-label">Blocked</span>
+        </div>
+      </div>
+
+      <button id="checkCurrentPage" class="button">Check Current Page</button>
+      <button id="reportPhish" class="button button-secondary">Report Phishing</button>
+      <button id="viewHistory" class="button button-secondary">View Threat History</button>
+    </div>
+
+    <div id="whitelistTab" class="tab-content">
+      <h3>Whitelist</h3>
+      <p>These domains will never be blocked:</p>
+      <div id="whitelistContainer" class="list">
+        <!-- Whitelist items will be added here dynamically -->
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <input type="text" id="whitelistInput" placeholder="Enter domain to whitelist" style="flex: 1; padding: 8px;">
+        <button id="addToWhitelist" class="button" style="width: auto;">Add</button>
+      </div>
+
+      <h3 style="margin-top: 16px;">Blacklist</h3>
+      <p>These domains will always be blocked:</p>
+      <div id="blacklistContainer" class="list">
+        <!-- Blacklist items will be added here dynamically -->
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <input type="text" id="blacklistInput" placeholder="Enter domain to blacklist" style="flex: 1; padding: 8px;">
+        <button id="addToBlacklist" class="button" style="width: auto;">Add</button>
+      </div>
+    </div>
+
+    <div id="settingsTab" class="tab-content">
+      <div class="toggle-container">
+        <span>Auto-block dangerous sites</span>
+        <label class="toggle">
+          <input type="checkbox" id="autoBlockToggle">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="toggle-container">
+        <span>Show notifications</span>
+        <label class="toggle">
+          <input type="checkbox" id="notificationsToggle">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="toggle-container">
+        <span>Scan website content</span>
+        <label class="toggle">
+          <input type="checkbox" id="contentScanToggle">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="sensitivity">
+        <p>Detection Sensitivity:</p>
+        <div class="sensitivity-options">
+          <div class="sensitivity-option" data-value="low">Low</div>
+          <div class="sensitivity-option active" data-value="medium">Medium</div>
+          <div class="sensitivity-option" data-value="high">High</div>
+        </div>
+      </div>
+
+      <button id="clearHistory" class="button button-danger">Clear History</button>
+      <button id="resetSettings" class="button button-secondary">Reset Settings</button>
+    </div>
+
+    <div class="footer">
+      PhishGuard v2.0 - Protecting you from phishing attacks
+    </div>
+  </div>
+
+  <script src="js/popup.js"></script>
+</body>
+</html>

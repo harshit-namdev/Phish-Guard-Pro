@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Security Warning - PhishGuard</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f8f9fa;
+            color: #212529;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .warning-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .warning-icon {
+            font-size: 48px;
+            margin-right: 20px;
+            color: #dc3545;
+        }
+        .warning-title {
+            margin: 0;
+            color: #dc3545;
+        }
+        .details {
+            margin: 20px 0;
+        }
+        .detail-item {
+            margin: 10px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            border-left: 4px solid #dc3545;
+        }
+        .buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        .btn-white {
+            background: white;
+            color: #212529;
+            border: 1px solid #dee2e6;
+        }
+        .btn-white:hover {
+            background: #f8f9fa;
+        }
+        .url-display {
+            word-break: break-all;
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 20px 0;
+            font-family: monospace;
+        }
+        .feedback-container {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #dee2e6;
+        }
+        .feedback-title {
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        .feedback-form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        textarea {
+            padding: 10px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            resize: vertical;
+            min-height: 80px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="warning-header">
+            <div class="warning-icon">⚠️</div>
+            <div>
+                <h1 class="warning-title">Security Warning</h1>
+                <p>This website has been flagged as potentially dangerous</p>
+            </div>
+        </div>
+
+        <div class="url-display">
+            <strong>URL:</strong> <span id="dangerous-url"></span>
+        </div>
+
+        <div class="details">
+            <h2>Threat Details</h2>
+            <div id="threatDetails"></div>
+        </div>
+
+        <div class="buttons">
+            <button class="btn btn-secondary" onclick="goBack()">Go Back (Recommended)</button>
+            <button class="btn btn-white" onclick="addToWhitelist()">Add to Whitelist</button>
+            <button class="btn btn-danger" onclick="proceed()">Proceed Anyway (Unsafe)</button>
+        </div>
+
+        <div class="feedback-container">
+            <h3 class="feedback-title">Is this a false positive?</h3>
+            <div class="feedback-form">
+                <textarea id="feedbackText" placeholder="Please provide details about why you believe this site is safe..."></textarea>
+                <button class="btn btn-secondary" onclick="submitFeedback()">Submit Feedback</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Parse URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const url = urlParams.get('url');
+        const reason = urlParams.get('reason');
+        let details = {};
+        
+        try {
+            details = JSON.parse(decodeURIComponent(urlParams.get('details')));
+        } catch (e) {
+            console.error('Error parsing details:', e);
+        }
+
+        // Update UI
+        document.getElementById('dangerous-url').textContent = url;
+
+        // Display threat details
+        const threatDetails = document.getElementById('threatDetails');
+        
+        // Add reason for blocking
+        addDetailItem('Reason for Blocking', getReasonText(reason));
+        
+        // Add details based on reason
+        if (reason === 'blacklisted') {
+            addDetailItem('Status', 'This website is on your blacklist');
+        } else if (reason === 'unsafe-url') {
+            if (details.safeBrowsing === false) {
+                addDetailItem('Google Safe Browsing', 'This website has been flagged as dangerous by Google Safe Browsing API');
+            }
+            if (details.patternAnalysis < 0.6) {
+                addDetailItem('Suspicious URL', 'This URL contains patterns commonly associated with phishing websites');
+            }
+        } else if (reason === 'unsafe-content') {
+            if (details.suspiciousPatterns && details.suspiciousPatterns.length > 0) {
+                addDetailItem('Suspicious Content', 'This website contains content patterns commonly associated with phishing:<br>' + 
+                    details.suspiciousPatterns.map(p => `• ${p}`).join('<br>'));
+            }
+        }
+
+        function getReasonText(reason) {
+            switch(reason) {
+                case 'blacklisted': return 'This website is on your blacklist';
+                case 'unsafe-url': return 'This URL has been detected as potentially dangerous';
+                case 'unsafe-content': return 'This website contains suspicious content';
+                default: return 'Unknown security threat';
+            }
+        }
+
+        function addDetailItem(title, content) {
+            const div = document.createElement('div');
+            div.className = 'detail-item';
+            div.innerHTML = `<strong>${title}:</strong><br>${content}`;
+            threatDetails.appendChild(div);
+        }
+
+        function goBack() {
+            history.back();
+        }
+
+        function proceed() {
+            if (confirm('Are you sure you want to proceed? This site may be dangerous.')) {
+                window.location.href = url;
+            }
+        }
+
+        function addToWhitelist() {
+            chrome.runtime.sendMessage({
+                type: 'addToWhitelist',
+                url: url
+            }, response => {
+                if (response && response.success) {
+                    alert(`${response.domain} has been added to your whitelist.`);
+                    window.location.href = url;
+                } else {
+                    alert('Failed to add to whitelist. Please try again.');
+                }
+            });
+        }
+
+        function submitFeedback() {
+            const feedbackText = document.getElementById('feedbackText').value;
+            
+            if (!feedbackText.trim()) {
+                alert('Please provide some details in your feedback.');
+                return;
+            }
+            
+            chrome.runtime.sendMessage({
+                type: 'submitFeedback',
+                feedbackType: 'falsePositive',
+                url: url,
+                details: feedbackText
+            }, response => {
+                if (response && response.success) {
+                    alert('Thank you for your feedback! It will help us improve our detection.');
+                    document.getElementById('feedbackText').value = '';
+                } else {
+                    alert('Failed to submit feedback. Please try again.');
+                }
+            });
+        }
+    </script>
+</body>
+</html>
