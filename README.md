@@ -125,5 +125,4 @@ PhishGuard respects your privacy:
 - API requests only include the minimum information needed for threat detection
 - User feedback is anonymized before submission
 # Phish-Guard-Pro
-# Phish-Guard-Pro
-# Phish-Guard-Pro
+
